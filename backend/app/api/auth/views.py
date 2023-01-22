@@ -17,7 +17,8 @@ from ..utils.crypt_util import (
 from .crud import (
     # login_user,
     create_user,
-    get_user)
+    get_user,
+)
 from fastapi.security import OAuth2PasswordRequestForm
 # from deps import get_current_user
 
@@ -64,21 +65,20 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
     return {'user': db_user, 'token': access_token}
 
 
-# @router.post("/login", response_model=Token)
-# async def login_for_access_token(
-#         form_data: OAuth2PasswordRequestForm = Depends(),
-#         db: Session = Depends(get_db)):
-#     user = authenticate_user(form_data.username, form_data.password, db)
-#     if not user:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect username or password",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
+@router.post("/login", response_model=Token)
+async def login(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: Session = Depends(get_db),
+):
 
-#     return create_access_token(user.id)
+    return await login_for_access_token(form_data=form_data, db=db)
 
-@router.post("/token", response_model=Token)
+
+@router.post(
+    "/token",
+    include_in_schema=False,
+    response_model=Token,
+)
 async def login_for_access_token(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db)):

@@ -16,6 +16,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# python backend/app/server.py
-
