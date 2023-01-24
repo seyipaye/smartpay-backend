@@ -1,9 +1,12 @@
+from typing import Any
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
+from ..common.models import ResponseModel
+
 
 class UserBase(SQLModel):
-    email: EmailStr
+    email: EmailStr = Field(default='seyi@gmail.com')
     full_name: str | None = None
 
 
@@ -18,13 +21,16 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    id: int
+    id: int = Field(default=2)
     disabled: bool | None = False
 
 
 class Token(SQLModel):
-    access_token: str
-    token_type: str
+    access_token: str = Field(
+        default=
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMCIsImV4cCI6MTY3NDU4NTE3Nn0.jCEcE16vanjOc_rwp_JG5UdvBXj9F2j2tiZ286B3Fes'
+    )
+    token_type: str = Field(default='bearer')
 
 
 class TokenData(SQLModel):

@@ -2,7 +2,10 @@ from datetime import timedelta
 from sqlmodel import Session
 
 from ..utils.constants import ACCESS_TOKEN_EXPIRE_MINUTES
-from .models import UserCreate, User, UserRead, TokenData, Token  #ResponseSchema, ResponseModel
+from .models import UserCreate, User, UserRead, Token  #ResponseSchema, ResponseModel
+
+from ..common.models import ResponseModel
+
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -65,12 +68,24 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
     return {'user': db_user, 'token': access_token}
 
 
-@router.post("/login", response_model=Token)
-async def login(
-        form_data: OAuth2PasswordRequestForm = Depends(),
-        db: Session = Depends(get_db),
-):
-
+@router.post(
+    "/login",
+    # response_model=AuthResponse,
+    response_model=ResponseModel,
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK:
+        ResponseModel.example(
+            description='Login Successful',
+            data={
+                'user': UserRead().dict(),
+                'token': Token().dict()
+            },
+        ),
+    },
+)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(),
+                db: Session = Depends(get_db)):
     return await login_for_access_token(form_data=form_data, db=db)
 
 

@@ -30,75 +30,84 @@ from sqlmodel import Field, SQLModel
 #     )
 #     data: Any | None
 
-# class ResponseModel(BaseModel):
-#     """Creates a response model for the .
 
-#     Provides a structure for providing a response to the .
-#     Provides a static method for success responses
+class ResponseModel(SQLModel):
+    """Creates a response model for the .
 
-#     Attributes:
-#         status: The status of the response.
-#         message: The message of the response.
-#         data: The data of the response.
-#     """
+    Provides a structure for providing a response to the .
+    Provides a static method for success responses
 
-#     status: str
-#     message: str
-#     data: Any
+    Attributes:
+        status: The status of the response.
+        message: The message of the response.
+        data: The data of the response.
+    """
 
-#     @staticmethod
-#     def success(data: Any, message: str = "success") -> dict[str, Any]:
-#         """Provides a success response data
+    status: bool
+    message: str
+    data: Any
 
-#         Args:
-#             data (dict): data to be returned
-#             message (str, optional): Descriptive messaged. Defaults to "success".
+    @staticmethod
+    def success(data: Any, message: str = "success") -> dict[str, Any]:
+        """Provides a success response data
 
-#         Returns:
-#             dict: key-value pair of status, message and data
-#         """
-#         return ResponseModel(status="success", message=message,
-#                              data=data).dict()
+        Args:
+            data (dict): data to be returned
+            message (str, optional): Descriptive messaged. Defaults to "success".
 
-#     @staticmethod
-#     def error(message: str, detail: str | None = None) -> dict[str, Any]:
-#         """Provides an error response data
+        Returns:
+            dict: key-value pair of status, message and data
+        """
+        return ResponseModel(status=True, message=message, data=data).dict()
 
-#         Args:
-#             data (dict): data to be returned
-#             detail (str): Descriptive error message.
+    @staticmethod
+    def error(message: str, detail: str | None = None) -> dict[str, Any]:
+        """Provides an error response data
 
-#         Returns:
-#             dict: key-value pair of status, detail
-#         """
+        Args:
+            data (dict): data to be returned
+            detail (str): Descriptive error message.
 
-#         return ResponseModel(
-#             status="error",
-#             message=message,
-#             data={
-#                 "detail": detail
-#             },
-#         ).dict()
+        Returns:
+            dict: key-value pair of status, detail
+        """
 
-#     @staticmethod
-#     def sample(description: str, example: dict[str, Any]) -> dict[str, Any]:
-#         """Provides an error response data
+        return ResponseModel(
+            status=False,
+            message=message,
+            data={
+                "detail": detail
+            },
+        ).dict()
 
-#         Args:
-#             data (dict): data to be returned
-#             detail (str): Descriptive  message.
+    @staticmethod
+    def example(
+        description: str = 'Success',
+        status: bool = True,
+        message: str = '',
+        data: dict[str, Any] = {},
+    ) -> dict[str, Any]:
+        """Provides an error response data
 
-#         Returns:
-#             dict: key-value pair of status, detail
-#         """
-#         return {
-#             "description": description,
-#             'content': {
-#                 'application/json': {
-#                     'example': example
-#                 }
-#             }
-#         }
+        Args:
+            data (dict): data to be returned
+            detail (str): Descriptive  message.
+
+        Returns:
+            dict: key-value pair of status, detail
+        """
+        return {
+            "description": description,
+            'content': {
+                'application/json': {
+                    'example': {
+                        'success': status,
+                        'message': description,
+                        'data': data
+                    }
+                }
+            }
+        }
 
 
 class Event(SQLModel, table=True):
