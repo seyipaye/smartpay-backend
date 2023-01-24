@@ -82,6 +82,7 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
                 'token': Token().dict()
             },
         ),
+       
     },
 )
 async def login(form_data: OAuth2PasswordRequestForm = Depends(),

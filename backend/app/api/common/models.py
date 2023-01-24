@@ -61,7 +61,7 @@ class ResponseModel(SQLModel):
         return ResponseModel(status=True, message=message, data=data).dict()
 
     @staticmethod
-    def error(message: str, detail: str | None = None) -> dict[str, Any]:
+    def error(message: str, data: Any | None = None) -> dict[str, Any]:
         """Provides an error response data
 
         Args:
@@ -72,13 +72,7 @@ class ResponseModel(SQLModel):
             dict: key-value pair of status, detail
         """
 
-        return ResponseModel(
-            status=False,
-            message=message,
-            data={
-                "detail": detail
-            },
-        ).dict()
+        return ResponseModel(status=False, message=message, data=data).dict()
 
     @staticmethod
     def example(
@@ -96,13 +90,15 @@ class ResponseModel(SQLModel):
         Returns:
             dict: key-value pair of status, detail
         """
+        if message == '':
+            message = description
         return {
             "description": description,
             'content': {
                 'application/json': {
                     'example': {
                         'success': status,
-                        'message': description,
+                        'message': message,
                         'data': data
                     }
                 }
