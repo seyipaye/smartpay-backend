@@ -5,11 +5,10 @@ from fastapi.responses import UJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.exceptions import RequestValidationError
-from collections import defaultdict
+
+from .exception_handlers import validation_exception_handler, http_exception_handler
 
 from fastapi import status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
 from api.common.models import ResponseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -50,7 +49,7 @@ def get_app() -> FastAPI:
         openapi_url="/open.json",
         default_response_class=UJSONResponse,
         responses={
-            status.HTTP_400_BAD_REQUEST:
+            422:
             ResponseModel.example(
                 status=False,
                 description='Validation error: Invalid request',
@@ -65,41 +64,12 @@ def get_app() -> FastAPI:
     )
 
     @appv1.exception_handler(RequestValidationError)
-    async def validation_error_handler(request, exc):
-        reformatted_message = defaultdict(list)
-        human_friendly_message = ''
-
-        for pydantic_error in exc.errors():
-            loc, msg = pydantic_error["loc"], pydantic_error["msg"]
-            filtered_loc = loc[1:] if loc[0] in ("body", "query",
-                                                 "path") else loc
-            field_string = ",".join(
-                filtered_loc)  # nested fields with dot-notation
-            reformatted_message[field_string].append(msg)
-
-            human_friendly_message += f'Error: {field_string.title()} {msg}, '
-
-        # Remove trailing comma
-        human_friendly_message = human_friendly_message.rstrip(', ')
-
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=ResponseModel.error(
-                message=human_friendly_message,
-                data=reformatted_message,
-            ),
-        )
+    def custom_validation_exception_handler(request, exc):
+        validation_exception_handler(request, exc)
 
     @appv1.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request, exc):
-
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=ResponseModel.error(
-                message=str(exc.detail),
-                data=None,
-            ),
-        )
+    def custom_http_exception_handler(request, exc):
+        http_exception_handler(request, exc)
 
     appv1.include_router(router=api_router_v1)
     app.mount("/api/v1", appv1)
