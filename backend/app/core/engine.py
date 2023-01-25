@@ -9,10 +9,8 @@ connect_args = {"check_same_thread": False}
 
 engine = create_engine(settings.DB_URL, echo=True, connect_args=connect_args)
 
-
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-
 
 # Dispose of the connection pool used if it's an _asyncio.AsyncEngine
 # def disconnect():
