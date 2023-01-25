@@ -64,12 +64,12 @@ def get_app() -> FastAPI:
     )
 
     @appv1.exception_handler(RequestValidationError)
-    def custom_validation_exception_handler(request, exc):
-        validation_exception_handler(request, exc)
+    async def custom_validation_exception_handler(request, exc):
+        return await validation_exception_handler(request, exc)
 
     @appv1.exception_handler(StarletteHTTPException)
-    def custom_http_exception_handler(request, exc):
-        http_exception_handler(request, exc)
+    async def custom_http_exception_handler(request, exc):
+        return await http_exception_handler(request, exc)
 
     appv1.include_router(router=api_router_v1)
     app.mount("/api/v1", appv1)

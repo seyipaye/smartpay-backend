@@ -2,7 +2,7 @@ from datetime import timedelta
 from sqlmodel import Session
 
 from ..utils.constants import ACCESS_TOKEN_EXPIRE_MINUTES
-from .models import UserCreate, User, UserRead, Token  #ResponseSchema, ResponseModel
+from .models import UserCreate, User, UserRead, LoginRequest, Token  #ResponseSchema, ResponseModel
 
 from ..common.models import ResponseModel
 
@@ -18,10 +18,10 @@ from ..utils.crypt_util import (
 )
 
 from .crud import (
-    # login_user,
     create_user,
     get_user,
 )
+
 from fastapi.security import OAuth2PasswordRequestForm
 # from deps import get_current_user
 
@@ -29,15 +29,30 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-
-@router.post("/signup")
+@router.post(
+    "/signup",
+    response_model=ResponseModel,
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK:
+        ResponseModel.example(
+            description='Signup Successful',
+            data={
+                'user': UserRead().dict(),
+                'token': Token().dict()
+            },
+        ),
+    },
+)
 async def signup(user: UserCreate, db: Session = Depends(get_db)):
-
     # Check if the user exists
     fetched_user = get_user(user.email, db)
     if fetched_user:
-        return {"status_code": 400, "message": "User already signed up!"}
-
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         # Create a new user
         db_user = User.from_orm(user)
@@ -55,22 +70,16 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
     # Create token to authorize user to access further endpoints
     access_token = create_access_token(db_user.id)
 
-    # user_out = schemas.UserOut(**db_user.__dict__, access_token=access_token)
-    # "user": UserObjectSchema(**jsonable_encoder(user)),
-    # "token": access_token,
-    # Serialize user object.
-    # results = {
-    #     "user": UserObjectSchema(**jsonable_encoder(user)),
-    #     "token": access_token,
-    #     "status_code": 201,
-    #     "message": "Welcome! Proceed to the login page...",
-    # }
-    return {'user': db_user, 'token': access_token}
-
+    return ResponseModel.success(
+        message='Signup successful',
+        data={
+            'user': db_user,
+            'token': access_token,
+        },
+    )
 
 @router.post(
     "/login",
-    # response_model=AuthResponse,
     response_model=ResponseModel,
     status_code=status.HTTP_200_OK,
     responses={
@@ -82,13 +91,28 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
                 'token': Token().dict()
             },
         ),
-       
     },
 )
-async def login(form_data: OAuth2PasswordRequestForm = Depends(),
-                db: Session = Depends(get_db)):
-    return await login_for_access_token(form_data=form_data, db=db)
+async def login(
+        request: LoginRequest,
+        db: Session = Depends(get_db),
+):
+    user = authenticate_user(request.email, request.password, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
+    token = create_access_token(user.id)
+    return ResponseModel.success(
+        message='Login successful',
+        data={
+            'user': user,
+            'token': token,
+        },
+    )
 
 @router.post(
     "/token",
@@ -108,7 +132,6 @@ async def login_for_access_token(
 
     return create_access_token(user.id)
 
-
 def authenticate_user(email: str, password: str, db: Session):
     user = get_user(email, db)
     if not user:
@@ -116,7 +139,6 @@ def authenticate_user(email: str, password: str, db: Session):
     if not verify_password(password, user.hashed_password):
         return False
     return user
-
 
 def create_access_token(id):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

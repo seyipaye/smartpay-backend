@@ -25,6 +25,10 @@ class UserRead(UserBase):
     disabled: bool | None = False
 
 
+class LoginRequest(SQLModel):
+    email: EmailStr
+    password: str
+
 class Token(SQLModel):
     access_token: str = Field(
         default=

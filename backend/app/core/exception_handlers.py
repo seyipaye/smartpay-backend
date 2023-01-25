@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from api.common.models import ResponseModel
 
 
-def validation_exception_handler(request, exc):
+async def validation_exception_handler(request, exc):
     reformatted_message = defaultdict(list)
     human_friendly_message = ''
 
@@ -30,7 +30,7 @@ def validation_exception_handler(request, exc):
     )
 
 
-def http_exception_handler(request, exc):
+async def http_exception_handler(request, exc):
 
     return JSONResponse(
         status_code=exc.status_code,
