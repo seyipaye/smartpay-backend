@@ -28,7 +28,7 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    id: int = Field(default=2)
+    id: str = Field(default='e3528ffa-d4a3-4133-b991-c230ae0dfbbf')
     disabled: bool | None = False
 
 
