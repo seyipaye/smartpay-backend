@@ -32,6 +32,7 @@ from .constants import (
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
+
 def create_access_token(
     *,
     data: dict,
@@ -74,6 +75,7 @@ async def get_current_user(
             algorithms=[JWT_ALGORITHM],
         )
         id = payload.get("sub")
+        print(id)
         if id is None:
             raise credentials_exception
         token_data = TokenData(user_id=id)

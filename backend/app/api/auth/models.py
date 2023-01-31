@@ -1,6 +1,7 @@
 from typing import Any
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
+import uuid as uuid_pkg
 
 from ..common.models import ResponseModel
 
@@ -11,7 +12,13 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
-    id: int = Field(default=None, primary_key=True)
+    # id: int = Field(default=None, primary_key=True)
+    id: uuid_pkg.UUID = Field(
+        default_factory=uuid_pkg.uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
     hashed_password: str | None = None
     disabled: bool | None = False
 
@@ -29,6 +36,7 @@ class LoginRequest(SQLModel):
     email: EmailStr
     password: str
 
+
 class Token(SQLModel):
     access_token: str = Field(
         default=
@@ -38,4 +46,4 @@ class Token(SQLModel):
 
 
 class TokenData(SQLModel):
-    user_id: int
+    user_id: str

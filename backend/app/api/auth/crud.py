@@ -2,7 +2,7 @@ from .models import User
 from sqlmodel import Session, select
 
 
-async def find_existed_user(user_id: int, db: Session) -> User | None:
+async def find_existed_user(user_id: str, db: Session) -> User | None:
     """
     A method to fetch a user info given an email.
 
