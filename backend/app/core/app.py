@@ -11,6 +11,7 @@ from .exception_handlers import validation_exception_handler, http_exception_han
 from fastapi import status
 from api.common.models import ResponseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
+import os
 
 
 def get_app() -> FastAPI:
@@ -37,7 +38,7 @@ def get_app() -> FastAPI:
 
     # @app.on_event("shutdown")
     # async def shutdown():
-    #     await database.disconnect()
+    #     os.remove('....sql_app.db')
 
     #create and mount version 1 of soberpal API
     appv1 = FastAPI(
