@@ -27,18 +27,19 @@ class User(UserBase, table=True):
 
 
 class Wallet(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
     balance: int = Field(default=0)
     active: bool = Field(default=True)
     updated_at: datetime = Field(default=datetime.utcnow())
     user_id: None | uuid_pkg.UUID = Field(
         default=None,
         foreign_key="user.id",
+        primary_key=True,
     )
 
 
 class UserCreate(UserBase):
     password: str
+
 
 class UserRead(UserBase):
     id: str = Field(default='e3528ffa-d4a3-4133-b991-c230ae0dfbbf')
