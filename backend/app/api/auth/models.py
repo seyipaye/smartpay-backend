@@ -25,6 +25,14 @@ class User(UserBase, table=True):
         'uselist': False,
     }, )
 
+class UserCreate(UserBase):
+    password: str
+
+
+class UserRead(UserBase):
+    id: str = Field(default='e3528ffa-d4a3-4133-b991-c230ae0dfbbf')
+    disabled: bool | None = False
+
 
 class Wallet(SQLModel, table=True):
     balance: int = Field(default=0)
@@ -35,17 +43,7 @@ class Wallet(SQLModel, table=True):
         foreign_key="user.id",
         primary_key=True,
     )
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserRead(UserBase):
-    id: str = Field(default='e3528ffa-d4a3-4133-b991-c230ae0dfbbf')
-    disabled: bool | None = False
-
-
+    
 class LoginRequest(SQLModel):
     email: EmailStr
     password: str
