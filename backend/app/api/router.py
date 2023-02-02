@@ -1,7 +1,7 @@
 from fastapi.routing import APIRouter
 
 from .auth.views import router as auth_router
-from .payment.views import router as transactions_router
+from .payments.views import router as payments_router
 from .common.views import router as common_router
 
 # from ..v1.communication.views import router as communication_router
@@ -34,8 +34,8 @@ api_router_v1 = APIRouter()
 
 api_router_v1.include_router(auth_router, prefix="/auth", tags=["Auth"])
 api_router_v1.include_router(
-    transactions_router,
-    prefix="/transactions",
-    tags=["Transactions"],
+    payments_router,
+    prefix="/payments",
+    tags=["Payments"],
 )
 api_router_v1.include_router(common_router, prefix="/common", tags=["Common"])
