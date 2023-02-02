@@ -1,6 +1,7 @@
-from typing import Any
+from datetime import datetime
+from typing import Any, List
 from pydantic import EmailStr
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 import uuid as uuid_pkg
 
 from ..common.models import ResponseModel
@@ -11,8 +12,16 @@ class UserBase(SQLModel):
     full_name: str | None = None
 
 
+class Wallet(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    balance: int = Field(default=0)
+    active: bool = Field(default=True)
+    # user_id: str = Field(foreign_key="user.id")
+    users: List["User"] = Relationship(back_populates="wallet")
+    updated_at: datetime = Field(default=datetime.utcnow())
+
+
 class User(UserBase, table=True):
-    # id: int = Field(default=None, primary_key=True)
     id: uuid_pkg.UUID = Field(
         default_factory=uuid_pkg.uuid4,
         primary_key=True,
@@ -21,6 +30,8 @@ class User(UserBase, table=True):
     )
     hashed_password: str | None = None
     disabled: bool | None = False
+    wallet_id: None | int = Field(foreign_key="wallet.id")
+    wallet: Wallet = Relationship(back_populates='users')
 
 
 class UserCreate(UserBase):

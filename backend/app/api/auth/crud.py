@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, Wallet
 from sqlmodel import Session, select
 
 
@@ -45,6 +45,7 @@ async def create_user(user: User, db: Session) -> User:
     Returns:
         Result: Database result.
     """
+    user.wallet = Wallet()
     db.add(user)
     db.commit()
     db.refresh(user)

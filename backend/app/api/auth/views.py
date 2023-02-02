@@ -29,6 +29,7 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 @router.post(
     "/signup",
     response_model=ResponseModel,
@@ -78,6 +79,7 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
         },
     )
 
+
 @router.post(
     "/login",
     response_model=ResponseModel,
@@ -114,6 +116,7 @@ async def login(
         },
     )
 
+
 @router.post(
     "/token",
     include_in_schema=False,
@@ -132,6 +135,7 @@ async def login_for_access_token(
 
     return create_access_token(user.id)
 
+
 def authenticate_user(email: str, password: str, db: Session):
     user = get_user(email, db)
     if not user:
@@ -139,6 +143,7 @@ def authenticate_user(email: str, password: str, db: Session):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
 
 def create_access_token(id):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
