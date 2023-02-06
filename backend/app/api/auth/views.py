@@ -23,7 +23,6 @@ from .crud import (
 )
 
 from fastapi.security import OAuth2PasswordRequestForm
-# from deps import get_current_user
 
 router = APIRouter()
 

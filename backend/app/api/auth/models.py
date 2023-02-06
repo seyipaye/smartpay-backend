@@ -9,7 +9,7 @@ from ..common.models import ResponseModel
 
 class UserBase(SQLModel):
     email: EmailStr = Field(default='seyi@gmail.com')
-    full_name: str | None = None
+    username: str | None = None
 
 
 class User(UserBase, table=True):
@@ -25,6 +25,7 @@ class User(UserBase, table=True):
         'uselist': False,
     }, )
 
+
 class UserCreate(UserBase):
     password: str
 
@@ -35,15 +36,21 @@ class UserRead(UserBase):
 
 
 class Wallet(SQLModel, table=True):
+    id: uuid_pkg.UUID = Field(
+        default_factory=uuid_pkg.uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
     balance: int = Field(default=0)
     active: bool = Field(default=True)
     updated_at: datetime = Field(default=datetime.utcnow())
     user_id: None | uuid_pkg.UUID = Field(
         default=None,
         foreign_key="user.id",
-        primary_key=True,
     )
-    
+
+
 class LoginRequest(SQLModel):
     email: EmailStr
     password: str
