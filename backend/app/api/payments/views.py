@@ -27,6 +27,7 @@ router = APIRouter()
 #     headers={"WWW-Authenticate": "Bearer"},
 # )
 
+
 @router.post(
     "/pay/{wallet_id}",
     response_model=ResponseModel,
@@ -136,7 +137,7 @@ async def top_up(
 
 
 @router.get(
-    "/balance",
+    "/wallet",
     response_model=ResponseModel,
     status_code=status.HTTP_200_OK,
     responses={
@@ -150,12 +151,12 @@ async def top_up(
         ),
     },
 )
-async def wallet_balance(
+async def wallet(
         db=Depends(get_db),
         user: User = Depends(get_current_user),
 ) -> dict:
 
-    balance = user.wallet.balance
+    # balance = user.wallet.balance
 
     # Send notification to parties
     # return a success response
@@ -167,9 +168,7 @@ async def wallet_balance(
 
     return ResponseModel.success(
         message='Successful',
-        data={
-            'balance': balance,
-        },
+        data=user.wallet,
     )
 
 
