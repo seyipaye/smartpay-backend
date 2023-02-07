@@ -1,5 +1,7 @@
 from api.router import api_router_v1
 from fastapi import FastAPI
+
+from api.utils.notification import init_fcm
 from .engine import create_db_and_tables
 from fastapi.responses import UJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +37,7 @@ def get_app() -> FastAPI:
     @app.on_event("startup")
     def startup():
         create_db_and_tables()
+        init_fcm()
 
     # @app.on_event("shutdown")
     # async def shutdown():

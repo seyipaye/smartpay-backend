@@ -1,6 +1,9 @@
 from sqlmodel import Session
 from ..auth.models import User
 
+import firebase_admin
+from firebase_admin import credentials, messaging
+
 # from .models import Event  #ResponseSchema, ResponseModel
 
 from ..common.models import ResponseModel
@@ -16,6 +19,7 @@ from .crud import (
 )
 
 from ..utils.jwt_util import get_current_user
+from ..utils.notification import FCM
 
 router = APIRouter()
 
@@ -169,6 +173,40 @@ async def wallet(
     return ResponseModel.success(
         message='Successful',
         data=user.wallet,
+    )
+
+
+@router.get(
+    "/notiff",
+    response_model=ResponseModel,
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK:
+        ResponseModel.example(
+            description='Payemnt Successful',
+            data={
+                'user': 'UserRead().dict()',
+                'token': 'Token().dict()'
+            },
+        ),
+    },
+)
+async def notif(
+        user: User = Depends(get_current_user),
+        db=Depends(get_db),
+) -> dict:
+    FCM.notify(
+        token=user.mobile_device_token,
+        title='Credit Alert',
+        body='You just got credited with NGN200 in your wallet',
+        data={'wallet': str(user.wallet.json())},
+    )
+
+    registration_token = 'duumM8AFRvKO3uweAXR3iF:APA91bEx-vbOSIqdqNWwGbWdXLizpdJl-IsreTWkw8pIuz52ue2sZqPYGFhAAH-3j09lh06M8TCL_GQTohDTMA_ktBWuyfoDmy8ZvJf8k-diiUc7lQvGfpr8QJZQvgzfSip0SZy__udl'
+
+    return ResponseModel.success(
+        message='Successful Sent message',
+        data=None,
     )
 
 

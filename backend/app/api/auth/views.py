@@ -2,7 +2,7 @@ from datetime import timedelta
 from sqlmodel import Session
 
 from ..utils.constants import ACCESS_TOKEN_EXPIRE_MINUTES
-from .models import UserCreate, User, UserRead, LoginRequest, Token  #ResponseSchema, ResponseModel
+from .models import UserCreate, User, UserRead, LoginRequest, Token, MobilePhoneToken  #ResponseSchema, ResponseModel
 
 from ..common.models import ResponseModel
 
@@ -16,6 +16,8 @@ from ..utils.crypt_util import (
     get_password_hash,
     verify_password,
 )
+
+from ..utils.jwt_util import get_current_user
 
 from .crud import (
     create_user,
@@ -113,6 +115,36 @@ async def login(
             'user': user,
             'token': token,
         },
+    )
+
+
+@router.post(
+    "/upload_token",
+    response_model=ResponseModel,
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK:
+        ResponseModel.example(
+            description='Signup Successful',
+            data={
+                'user': UserRead().dict(),
+                'token': Token().dict()
+            },
+        ),
+    },
+)
+async def upload_token(
+        token: MobilePhoneToken,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_user),
+):
+    user.mobile_device_token = token.device_token
+    db.add(user)
+    db.commit()
+
+    return ResponseModel.success(
+        message='Token successfully uploaded',
+        data=None,
     )
 
 

@@ -24,10 +24,15 @@ class User(UserBase, table=True):
     wallet: "Wallet" = Relationship(sa_relationship_kwargs={
         'uselist': False,
     }, )
+    mobile_device_token: None | str = None
 
 
 class UserCreate(UserBase):
     password: str
+
+
+class MobilePhoneToken(SQLModel):
+    device_token: str
 
 
 class UserRead(UserBase):
