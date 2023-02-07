@@ -18,6 +18,9 @@ from .crud import (
     get_wallet,
 )
 
+from ..auth.crud import (
+    find_existed_user, )
+
 from ..utils.jwt_util import get_current_user
 from ..utils.notification import FCM
 
@@ -84,8 +87,27 @@ async def pay(
     # Subtract money from curent wallet, and add to the other wallet
     from_wallet.balance -= amount
     to_wallet.balance += amount
-    update_wallet(from_wallet, db)
+    from_wallet = update_wallet(from_wallet, db)
     update_wallet(to_wallet, db)
+
+    from_user = await find_existed_user(str(from_wallet.user_id), db=db)
+    if from_user:
+        FCM.notify(
+            token=user.mobile_device_token,
+            title='Debit Alert',
+            body=f'You just got debited with NGN{amount} from your wallet',
+            data={'wallet': str(from_user.wallet.json())},
+        )
+
+    #Get info about to_wallet user
+    to_user = await find_existed_user(str(to_wallet.user_id), db=db)
+    if to_user:
+        FCM.notify(
+            token=to_user.mobile_device_token,
+            title='Credit Alert',
+            body=f'You just got credited with NGN{amount} in your wallet',
+            data={'wallet': str(to_user.wallet.json())},
+        )
 
     # Send notification to parties
     # return a success response
@@ -97,7 +119,7 @@ async def pay(
 
     return ResponseModel.success(
         message='Transaction Successful',
-        data=to_wallet,
+        data=from_wallet,
     )
 
 
@@ -124,8 +146,14 @@ async def top_up(
 
     # Subtract money from curent wallet, and add to the other wallet
     to_wallet.balance += amount
-    update_wallet(to_wallet, db)
 
+    update_wallet(to_wallet, db)
+    FCM.notify(
+        token=user.mobile_device_token,
+        title='Credit Alert',
+        body=f'You just got credited with NGN{amount} in your wallet',
+        data={'wallet': str(user.wallet.json())},
+    )
     # Send notification to parties
     # return a success response
 

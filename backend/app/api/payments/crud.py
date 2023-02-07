@@ -33,7 +33,7 @@ def get_wallet(id: str, db: Session) -> Wallet | None:
     wallet = results.one()
     return wallet
 
-def update_wallet(wallet: Wallet, db: Session) -> Wallet | None:
+def update_wallet(wallet: Wallet, db: Session) -> Wallet:
     """
     A method to fetch a user info given an email.
 

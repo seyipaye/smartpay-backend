@@ -37,6 +37,7 @@ class FCM(object):
         # Send a message to the device corresponding to the provided
         # registration token.
         try:
+            print(message.__dict__)
             messaging.send(message)
         except (Exception) as e:
             print(e)
