@@ -35,6 +35,93 @@ router = APIRouter()
 # )
 
 
+@router.get(
+    "/charge/{wallet_id}",
+    response_model=ResponseModel,
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK:
+        ResponseModel.example(
+            description='Payemnt Successful',
+            data={
+                'user': 'UserRead().dict()',
+                'token': 'Token().dict()'
+            },
+        ),
+    },
+)
+async def charge(
+    wallet_id: str,
+    amount: int,
+    db=Depends(get_db),
+    user: User = Depends(get_current_user)
+) -> dict:
+
+    # Check if wallet is not the user wallet
+    # Check if balance is sufficient
+    # Check if wallet_id is valid
+    # Subtract money from from_wallet, and add to to_wallet
+    # Send notification to parties
+    # return a success response
+
+    # Check if wallet_id is valid
+    from_wallet = get_wallet(wallet_id, db)
+    if from_wallet is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Wallet Id is not valid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Check if balance is sufficient
+    if from_wallet.balance <= amount:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insufficient balance for transaction",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    to_wallet = user.wallet
+
+    # Subtract money from curent wallet, and add to the other wallet
+    from_wallet.balance -= amount
+    to_wallet.balance += amount
+    from_wallet = update_wallet(from_wallet, db)
+    update_wallet(to_wallet, db)
+
+    from_user = await find_existed_user(str(from_wallet.user_id), db=db)
+    if from_user:
+        FCM.notify(
+            token=user.mobile_device_token,
+            title='Debit Alert',
+            body=f'You just got debited with NGN{amount} from your wallet',
+            data={'wallet': str(from_user.wallet.json())},
+        )
+
+    #Get info about to_wallet user
+    to_user = await find_existed_user(str(to_wallet.user_id), db=db)
+    if to_user:
+        FCM.notify(
+            token=to_user.mobile_device_token,
+            title='Credit Alert',
+            body=f'You just got credited with NGN{amount} in your wallet',
+            data={'wallet': str(to_user.wallet.json())},
+        )
+
+    # Send notification to parties
+    # return a success response
+
+    # print(user)
+    # session.add(new_event)
+    # session.commit()
+    # session.refresh(new_event)
+
+    return ResponseModel.success(
+        message='Charge Successful',
+        data=to_wallet,
+    )
+
+
 @router.post(
     "/pay/{wallet_id}",
     response_model=ResponseModel,
